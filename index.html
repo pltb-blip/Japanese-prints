@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Artistic Print Collection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-style: italic;
+            font-size: 1.2em;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .sort-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        select {
+            padding: 10px 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            background: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover {
+            border-color: #3498db;
+            transform: translateY(-1px);
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px 0;
+        }
+
+        .print-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .print-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        .print-image {
+            width: 100%;
+            height: 250px;
+            background: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7f8c8d;
+            font-style: italic;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .print-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .print-card:hover .print-image img {
+            transform: scale(1.05);
+        }
+
+        .print-info {
+            padding: 20px;
+        }
+
+        .print-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .print-artist {
+            color: #e74c3c;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .print-date {
+            color: #7f8c8d;
+            font-size: 0.95em;
+            margin-bottom: 10px;
+        }
+
+        .print-description {
+            color: #34495e;
+            line-height: 1.5;
+            font-size: 0.9em;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .no-results {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            grid-column: 1 / -1;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .sort-group {
+                justify-content: space-between;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Our Artistic Print Collection</h1>
+            <p class="subtitle">A curated showcase of our beloved prints</p>
+        </header>
+
+        <div class="controls">
+            <div class="sort-group">
+                <label for="sortBy">Sort by:</label>
+                <select id="sortBy" onchange="sortPrints()">
+                    <option value="title">Title</option>
+                    <option value="artist">Artist</option>
+                    <option value="date">Date Published</option>
+                    <option value="dateAcquired">Date Acquired</option>
+                </select>
+            </div>
+            <div class="sort-group">
+                <label for="sortOrder">Order:</label>
+                <select id="sortOrder" onchange="sortPrints()">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="gallery" id="gallery">
+            <!-- Prints will be populated here -->
+        </div>
+    </div>
+
+    <script>
+        // Sample data - replace with your actual prints
+        let prints = [
+            {
+                title: "Starry Night Over the Rhône",
+                artist: "Vincent van Gogh",
+                date: "1888",
+                dateAcquired: "2023-03-15",
+                description: "A beautiful reproduction of van Gogh's masterpiece depicting the night sky reflected in water.",
+                image: "https://via.placeholder.com/300x250/4a90e2/ffffff?text=Starry+Night"
+            },
+            {
+                title: "The Great Wave",
+                artist: "Katsushika Hokusai",
+                date: "1831",
+                dateAcquired: "2022-11-08",
+                description: "Iconic Japanese woodblock print showing a giant wave threatening boats.",
+                image: "https://via.placeholder.com/300x250/2ecc71/ffffff?text=Great+Wave"
+            },
+            {
+                title: "Girl with a Pearl Earring",
+                artist: "Johannes Vermeer",
+                date: "1665",
+                dateAcquired: "2023-07-22",
+                description: "Reproduction of Vermeer's mysterious portrait of a girl with an exotic pearl earring.",
+                image: "https://via.placeholder.com/300x250/f39c12/ffffff?text=Pearl+Earring"
+            },
+            {
+                title: "The Persistence of Memory",
+                artist: "Salvador Dalí",
+                date: "1931",
+                dateAcquired: "2023-01-10",
+                description: "Surrealist masterpiece featuring melting clocks in a dreamlike landscape.",
+                image: "https://via.placeholder.com/300x250/e74c3c/ffffff?text=Melting+Clocks"
+            },
+            {
+                title: "Water Lilies",
+                artist: "Claude Monet",
+                date: "1919",
+                dateAcquired: "2022-09-03",
+                description: "Impressionist painting of water lilies floating on a pond surface.",
+                image: "https://via.placeholder.com/300x250/9b59b6/ffffff?text=Water+Lilies"
+            },
+            {
+                title: "American Gothic",
+                artist: "Grant Wood",
+                date: "1930",
+                dateAcquired: "2023-05-17",
+                description: "Iconic American painting depicting a farmer and his daughter in front of their home.",
+                image: "https://via.placeholder.com/300x250/34495e/ffffff?text=American+Gothic"
+            }
+        ];
+
+        function displayPrints(printsToShow) {
+            const gallery = document.getElementById('gallery');
+            
+            if (printsToShow.length === 0) {
+                gallery.innerHTML = '<div class="no-results">No prints match your criteria.</div>';
+                return;
+            }
+
+            gallery.innerHTML = '';
+            
+            printsToShow.forEach((print, index) => {
+                const printCard = document.createElement('div');
+                printCard.className = 'print-card';
+                printCard.style.animationDelay = `${index * 0.1}s`;
+                
+                printCard.innerHTML = `
+                    <div class="print-image">
+                        <img src="${print.image}" alt="${print.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>Image not available</span>'">
+                    </div>
+                    <div class="print-info">
+                        <div class="print-title">${print.title}</div>
+                        <div class="print-artist">by ${print.artist}</div>
+                        <div class="print-date">Published: ${print.date} | Acquired: ${formatDate(print.dateAcquired)}</div>
+                        <div class="print-description">${print.description}</div>
+                    </div>
+                `;
+                
+                gallery.appendChild(printCard);
+            });
+        }
+
+        function sortPrints() {
+            const sortBy = document.getElementById('sortBy').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+            
+            const sortedPrints = [...prints].sort((a, b) => {
+                let valueA, valueB;
+                
+                switch(sortBy) {
+                    case 'title':
+                        valueA = a.title.toLowerCase();
+                        valueB = b.title.toLowerCase();
+                        break;
+                    case 'artist':
+                        valueA = a.artist.toLowerCase();
+                        valueB = b.artist.toLowerCase();
+                        break;
+                    case 'date':
+                        valueA = parseInt(a.date);
+                        valueB = parseInt(b.date);
+                        break;
+                    case 'dateAcquired':
+                        valueA = new Date(a.dateAcquired);
+                        valueB = new Date(b.dateAcquired);
+                        break;
+                    default:
+                        return 0;
+                }
+                
+                if (valueA < valueB) {
+                    return sortOrder === 'asc' ? -1 : 1;
+                }
+                if (valueA > valueB) {
+                    return sortOrder === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+            
+            displayPrints(sortedPrints);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        // Initialize the gallery
+        document.addEventListener('DOMContentLoaded', function() {
+            displayPrints(prints);
+        });
+    </script>
+</body>
+</html>
