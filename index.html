@@ -160,6 +160,14 @@
             font-size: 0.9em;
         }
 
+        .loading {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            grid-column: 1 / -1;
+            padding: 40px;
+        }
+
         @keyframes fadeInUp {
             to {
                 opacity: 1;
@@ -173,6 +181,16 @@
             font-style: italic;
             grid-column: 1 / -1;
             padding: 40px;
+        }
+
+        .error {
+            text-align: center;
+            color: #e74c3c;
+            grid-column: 1 / -1;
+            padding: 40px;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 10px;
+            margin: 20px 0;
         }
 
         @media (max-width: 768px) {
@@ -218,62 +236,59 @@
         </div>
 
         <div class="gallery" id="gallery">
-            <!-- Prints will be populated here -->
+            <div class="loading">Loading prints...</div>
         </div>
     </div>
 
     <script>
-        // Sample data - replace with your actual prints
-        let prints = [
-            {
-                title: "Starry Night Over the Rhône",
-                artist: "Vincent van Gogh",
-                date: "1888",
-                dateAcquired: "2023-03-15",
-                description: "A beautiful reproduction of van Gogh's masterpiece depicting the night sky reflected in water.",
-                image: "https://via.placeholder.com/300x250/4a90e2/ffffff?text=Starry+Night"
-            },
-            {
-                title: "The Great Wave",
-                artist: "Katsushika Hokusai",
-                date: "1831",
-                dateAcquired: "2022-11-08",
-                description: "Iconic Japanese woodblock print showing a giant wave threatening boats.",
-                image: "https://via.placeholder.com/300x250/2ecc71/ffffff?text=Great+Wave"
-            },
-            {
-                title: "Girl with a Pearl Earring",
-                artist: "Johannes Vermeer",
-                date: "1665",
-                dateAcquired: "2023-07-22",
-                description: "Reproduction of Vermeer's mysterious portrait of a girl with an exotic pearl earring.",
-                image: "https://via.placeholder.com/300x250/f39c12/ffffff?text=Pearl+Earring"
-            },
-            {
-                title: "The Persistence of Memory",
-                artist: "Salvador Dalí",
-                date: "1931",
-                dateAcquired: "2023-01-10",
-                description: "Surrealist masterpiece featuring melting clocks in a dreamlike landscape.",
-                image: "https://via.placeholder.com/300x250/e74c3c/ffffff?text=Melting+Clocks"
-            },
-            {
-                title: "Water Lilies",
-                artist: "Claude Monet",
-                date: "1919",
-                dateAcquired: "2022-09-03",
-                description: "Impressionist painting of water lilies floating on a pond surface.",
-                image: "https://via.placeholder.com/300x250/9b59b6/ffffff?text=Water+Lilies"
-            },
-            {
-                title: "American Gothic",
-                artist: "Grant Wood",
-                date: "1930",
-                dateAcquired: "2023-05-17",
-                description: "Iconic American painting depicting a farmer and his daughter in front of their home.",
-                image: "https://via.placeholder.com/300x250/34495e/ffffff?text=American+Gothic"
+        let prints = [];
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            return lines.slice(1).map(line => {
+                const values = parseCSVLine(line);
+                const print = {};
+                
+                headers.forEach((header, index) => {
+                    print[header] = values[index] ? values[index].trim() : '';
+                });
+                
+                return print;
+            });
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
             }
-        ];
+            
+            result.push(current);
+            return result;
+        }
+
+        function getImageUrl(imageId, hasObverse) {
+            // Create placeholder URLs based on the imageId
+            const colors = ['4a90e2', '2ecc71', 'f39c12', 'e74c3c', '9b59b6', '34495e'];
+            const colorIndex = Math.abs(imageId.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % colors.length;
+            const color = colors[colorIndex];
+            
+            return `https://via.placeholder.com/300x250/${color}/ffffff?text=${encodeURIComponent(imageId.replace('_', '+'))}`;
+        }
 
         function displayPrints(printsToShow) {
             const gallery = document.getElementById('gallery');
@@ -290,9 +305,11 @@
                 printCard.className = 'print-card';
                 printCard.style.animationDelay = `${index * 0.1}s`;
                 
+                const imageUrl = getImageUrl(print.imageId, print.hasObverse === 'TRUE');
+                
                 printCard.innerHTML = `
                     <div class="print-image">
-                        <img src="${print.image}" alt="${print.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>Image not available</span>'">
+                        <img src="${imageUrl}" alt="${print.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>Image not available</span>'">
                     </div>
                     <div class="print-info">
                         <div class="print-title">${print.title}</div>
@@ -355,9 +372,34 @@
             });
         }
 
+        function loadPrints() {
+            fetch('prints.csv')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(csvText => {
+                    prints = parseCSV(csvText);
+                    displayPrints(prints);
+                })
+                .catch(error => {
+                    console.error('Error loading prints:', error);
+                    const gallery = document.getElementById('gallery');
+                    gallery.innerHTML = `
+                        <div class="error">
+                            <h3>Error loading prints</h3>
+                            <p>Could not load prints.csv. Please make sure the file exists and is accessible.</p>
+                            <p>Error: ${error.message}</p>
+                        </div>
+                    `;
+                });
+        }
+
         // Initialize the gallery
         document.addEventListener('DOMContentLoaded', function() {
-            displayPrints(prints);
+            loadPrints();
         });
     </script>
 </body>
