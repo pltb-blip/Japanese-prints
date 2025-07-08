@@ -282,9 +282,41 @@
         }
 
         function getImageUrl(imageId, hasObverse) {
-            // Return the actual image file path
-            // Assumes your JPG files are in the same directory as the HTML file
+            // Try common image extensions
+            const extensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            
+            // For now, default to .jpg but we'll add fallback handling
             return `${imageId}.jpg`;
+        }
+        
+        function tryImageSources(imgElement, imageId) {
+            const extensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            const baseNames = [imageId, imageId.toLowerCase(), imageId.toUpperCase()];
+            
+            let attemptIndex = 0;
+            
+            function tryNext() {
+                if (attemptIndex >= extensions.length * baseNames.length) {
+                    // All attempts failed, show placeholder
+                    imgElement.style.display = 'none';
+                    imgElement.parentElement.innerHTML = `<span>Image not found: ${imageId}</span>`;
+                    return;
+                }
+                
+                const extIndex = attemptIndex % extensions.length;
+                const nameIndex = Math.floor(attemptIndex / extensions.length);
+                const testUrl = `${baseNames[nameIndex]}${extensions[extIndex]}`;
+                
+                imgElement.onerror = () => {
+                    attemptIndex++;
+                    tryNext();
+                };
+                
+                imgElement.src = testUrl;
+                attemptIndex++;
+            }
+            
+            tryNext();
         }
 
         function displayPrints(printsToShow) {
@@ -306,7 +338,7 @@
                 
                 printCard.innerHTML = `
                     <div class="print-image">
-                        <img src="${imageUrl}" alt="${print.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>Image not available</span>'">
+                        <img alt="${print.title}" onerror="tryImageSources(this, '${print.imageId}')">
                     </div>
                     <div class="print-info">
                         <div class="print-title">${print.title}</div>
@@ -315,6 +347,10 @@
                         <div class="print-description">${print.description}</div>
                     </div>
                 `;
+                
+                // Set initial image source
+                const img = printCard.querySelector('img');
+                img.src = getImageUrl(print.imageId, print.hasObverse === 'TRUE');
                 
                 gallery.appendChild(printCard);
             });
