@@ -358,27 +358,31 @@
     let prints = [];
 
     // Load prints from CSV
-    Papa.parse("prints.csv", {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            prints = results.data.map((item, index) => ({
-                id: index + 1,
-                title: item.title || "Untitled",
-                artist: item.artist || "Unknown",
-                date: item.date || "Unknown",
-                dateAcquired: item.dateAcquired || "Unknown",
-                description: item.description || "",
-                imageId: item.imageId || "Placeholder",
-                hasObverse: item.hasObverse === "true"
-            }));
-            updateDisplay();
-        },
-        error: function(err) {
-            document.getElementById('gallery').innerHTML = `<div class="loading">Failed to load prints: ${err.message}</div>`;
-        }
-    });
+    
+Papa.parse("prints.csv", {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+        prints = results.data.map((item, index) => ({
+            id: index + 1,
+            title: item.title || "Untitled",
+            artist: item.artist || "Unknown",
+            date: item.date || "Unknown",
+            dateAcquired: item.dateAcquired || "Unknown",
+            description: item.description || "",
+            imageId: item.imageId || "Placeholder",
+            hasObverse: item.hasObverse === "true"
+        }));
+        updateDisplay();
+    },
+    error: function(err) {
+        const gallery = document.getElementById('gallery');
+        gallery.innerHTML = `<div class="loading">❌ Failed to load prints.csv — is it published on GitHub Pages?</div>`;
+        console.error("CSV Load Error:", err);
+    }
+});
+
 
     function createPrintCard(print) {
         const card = document.createElement('div');
