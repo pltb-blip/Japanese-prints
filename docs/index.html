@@ -205,6 +205,9 @@
         }
 
         .lightbox-image {
+    object-fit: contain;
+    background: #fff;
+
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
@@ -297,6 +300,53 @@
 
     <div class="lightbox" id="lightbox">
         <div class="lightbox-content">
+<button id="prevBtn" style="
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    font-size: 30px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1100;
+    display: none;
+">&#10094;</button>
+
+<button id="nextBtn" style="
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    font-size: 30px;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1100;
+    display: none;
+">&#10095;</button>
+
+<button id="toggleViewBtn" style="
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    padding: 10px 15px;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1100;
+    display: none;
+">View Back</button>
+
             <span class="lightbox-close" id="lightboxClose">&times;</span>
             <img class="lightbox-image" id="lightboxImage" alt="Full size print">
         </div>
@@ -346,7 +396,7 @@
                 <div class="print-description">${print.description}</div>
             </div>
         `;
-        card.addEventListener('click', () => openLightbox(print));
+        card.addEventListener('click', () => { currentIndex = index; openLightbox(print); });
         return card;
     }
 
@@ -387,7 +437,87 @@
         });
     }
 
-    function openLightbox(print) {
+    let showingObverse = true;
+
+let currentIndex = -1;
+let showingObverse = true;
+
+function openLightbox(print) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const toggleBtn = document.getElementById('toggleViewBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    showingObverse = true;
+    lightboxImage.src = `${print.imageId}.jpg`;
+    lightboxImage.alt = print.title;
+    lightboxImage.style.transform = "scale(1)";
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    if (print.hasObverse) {
+        toggleBtn.style.display = 'block';
+        toggleBtn.textContent = 'View Back';
+        toggleBtn.onclick = () => {
+            showingObverse = !showingObverse;
+            lightboxImage.src = showingObverse ? `${print.imageId}.jpg` : `${print.imageId}_back.jpg`;
+            toggleBtn.textContent = showingObverse ? 'View Back' : 'View Front';
+        };
+    } else {
+        toggleBtn.style.display = 'none';
+    }
+
+    prevBtn.style.display = 'block';
+    nextBtn.style.display = 'block';
+}
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+    if (currentIndex > 0) {
+        currentIndex--;
+        openLightbox(prints[currentIndex]);
+    }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+    if (currentIndex < prints.length - 1) {
+        currentIndex++;
+        openLightbox(prints[currentIndex]);
+    }
+});
+
+document.getElementById('lightboxImage').addEventListener('click', () => {
+    const img = document.getElementById('lightboxImage');
+    if (img.style.transform === "scale(1.5)") {
+        img.style.transform = "scale(1)";
+    } else {
+        img.style.transform = "scale(1.5)";
+    }
+});
+
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const toggleBtn = document.getElementById('toggleViewBtn');
+
+    showingObverse = true;
+    lightboxImage.src = `${print.imageId}.jpg`;
+    lightboxImage.alt = print.title;
+    lightbox.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    if (print.hasObverse) {
+        toggleBtn.style.display = 'block';
+        toggleBtn.textContent = 'View Back';
+        toggleBtn.onclick = () => {
+            showingObverse = !showingObverse;
+            lightboxImage.src = showingObverse ? `${print.imageId}.jpg` : `${print.imageId}_back.jpg`;
+            toggleBtn.textContent = showingObverse ? 'View Back' : 'View Front';
+        };
+    } else {
+        toggleBtn.style.display = 'none';
+    }
+}
+
         const lightbox = document.getElementById('lightbox');
         const lightboxImage = document.getElementById('lightboxImage');
 
