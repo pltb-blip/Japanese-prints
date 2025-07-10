@@ -297,179 +297,123 @@
         </div>
     </div>
 
-    <script>
-        // Sample data matching your CSV
-        const prints = [
-            {
-                id: 1,
-                title: "Starry Night Over the Rhône",
-                artist: "Vincent van Gogh",
-                date: "1888",
-                dateAcquired: "3/15/2023",
-                description: "A beautiful reproduction of van Gogh's masterpiece depicting the night sky reflected in water.",
-                imageId: "Starry_Night",
-                hasObverse: false
-            },
-            {
-                id: 2,
-                title: "36 Views of Mt. Fuji (image 7 - Kuroto Bay)",
-                artist: "Utagawa Hiroshige (1797 - 1858)",
-                date: "1831",
-                dateAcquired: "11/8/2022",
-                description: "Thirty-six Views of Mt. Fuji (Fuji sanjurokkei)",
-                imageId: "Kuroto_Bay",
-                hasObverse: true
-            },
-            {
-                id: 3,
-                title: "Girl with a Pearl Earring",
-                artist: "Johannes Vermeer",
-                date: "1665",
-                dateAcquired: "7/22/2023",
-                description: "Reproduction of Vermeer's mysterious portrait of a girl with an exotic pearl earring.",
-                imageId: "Pearl_Earring",
-                hasObverse: false
-            },
-            {
-                id: 4,
-                title: "The Persistence of Memory",
-                artist: "Salvador Dalí",
-                date: "1931",
-                dateAcquired: "1/10/2023",
-                description: "Surrealist masterpiece featuring melting clocks in a dreamlike landscape.",
-                imageId: "Persistence_Memory",
-                hasObverse: false
-            },
-            {
-                id: 5,
-                title: "100 Famous Views of Edo (image 40 - Spring)",
-                artist: "Utagawa Hiroshige (1797 - 1858)",
-                date: "1919",
-                dateAcquired: "9/3/2022",
-                description: "Series of prints depicting famous views",
-                imageId: "Spring",
-                hasObverse: true
-            },
-            {
-                id: 6,
-                title: "American Gothic",
-                artist: "Grant Wood",
-                date: "1930",
-                dateAcquired: "5/17/2023",
-                description: "Iconic American painting depicting a farmer and his daughter in front of their home.",
-                imageId: "American_Gothic",
-                hasObverse: false
+    
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script>
+    let prints = [];
+
+    // Load prints from CSV
+    Papa.parse("prints.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            prints = results.data.map((item, index) => ({
+                id: index + 1,
+                title: item.title || "Untitled",
+                artist: item.artist || "Unknown",
+                date: item.date || "Unknown",
+                dateAcquired: item.dateAcquired || "Unknown",
+                description: item.description || "",
+                imageId: item.imageId || "Placeholder",
+                hasObverse: item.hasObverse === "true"
+            }));
+            updateDisplay();
+        },
+        error: function(err) {
+            document.getElementById('gallery').innerHTML = `<div class="loading">Failed to load prints: ${err.message}</div>`;
+        }
+    });
+
+    function createPrintCard(print) {
+        const card = document.createElement('div');
+        card.className = 'print-card';
+        card.innerHTML = `
+            <div class="print-image">
+                <img src="https://via.placeholder.com/400x300/ecf0f1/7f8c8d?text=${encodeURIComponent(print.imageId)}" 
+                     alt="${print.title}" 
+                     loading="lazy">
+            </div>
+            <div class="print-info">
+                <div class="print-title">${print.title}</div>
+                <div class="print-artist">by ${print.artist}</div>
+                <div class="print-date">Published: ${print.date} | Acquired: ${print.dateAcquired}</div>
+                <div class="print-description">${print.description}</div>
+            </div>
+        `;
+        card.addEventListener('click', () => openLightbox(print));
+        return card;
+    }
+
+    function renderPrints(printsToRender) {
+        const gallery = document.getElementById('gallery');
+        gallery.innerHTML = '';
+
+        printsToRender.forEach((print, index) => {
+            const card = createPrintCard(print);
+            card.style.animationDelay = `${index * 0.1}s`;
+            gallery.appendChild(card);
+        });
+    }
+
+    function sortPrints(prints, sortBy, sortOrder) {
+        return [...prints].sort((a, b) => {
+            let aValue, bValue;
+
+            switch (sortBy) {
+                case 'date':
+                    aValue = parseInt(a.date) || 0;
+                    bValue = parseInt(b.date) || 0;
+                    break;
+                case 'dateAcquired':
+                    aValue = new Date(a.dateAcquired);
+                    bValue = new Date(b.dateAcquired);
+                    break;
+                default:
+                    aValue = (a[sortBy] || "").toLowerCase();
+                    bValue = (b[sortBy] || "").toLowerCase();
             }
-        ];
 
-        // Function to create print cards
-        function createPrintCard(print) {
-            const card = document.createElement('div');
-            card.className = 'print-card';
-            card.innerHTML = `
-                <div class="print-image">
-                    <img src="https://via.placeholder.com/400x300/ecf0f1/7f8c8d?text=${print.imageId}" 
-                         alt="${print.title}" 
-                         loading="lazy">
-                </div>
-                <div class="print-info">
-                    <div class="print-title">${print.title}</div>
-                    <div class="print-artist">by ${print.artist}</div>
-                    <div class="print-date">Published: ${print.date} | Acquired: ${print.dateAcquired}</div>
-                    <div class="print-description">${print.description}</div>
-                </div>
-            `;
-            
-            // Add click handler for lightbox
-            card.addEventListener('click', () => {
-                openLightbox(print);
-            });
-            
-            return card;
-        }
-
-        // Function to render prints
-        function renderPrints(printsToRender) {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '';
-            
-            printsToRender.forEach((print, index) => {
-                const card = createPrintCard(print);
-                card.style.animationDelay = `${index * 0.1}s`;
-                gallery.appendChild(card);
-            });
-        }
-
-        // Function to sort prints
-        function sortPrints(prints, sortBy, sortOrder) {
-            return [...prints].sort((a, b) => {
-                let aValue, bValue;
-                
-                switch (sortBy) {
-                    case 'date':
-                        aValue = parseInt(a.date);
-                        bValue = parseInt(b.date);
-                        break;
-                    case 'dateAcquired':
-                        aValue = new Date(a.dateAcquired);
-                        bValue = new Date(b.dateAcquired);
-                        break;
-                    default:
-                        aValue = a[sortBy].toLowerCase();
-                        bValue = b[sortBy].toLowerCase();
-                }
-                
-                if (sortOrder === 'desc') {
-                    return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-                } else {
-                    return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-                }
-            });
-        }
-
-        // Lightbox functionality
-        function openLightbox(print) {
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImage = document.getElementById('lightboxImage');
-            
-            lightboxImage.src = `https://via.placeholder.com/800x600/ecf0f1/7f8c8d?text=${print.imageId}`;
-            lightboxImage.alt = print.title;
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeLightbox() {
-            const lightbox = document.getElementById('lightbox');
-            lightbox.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        // Event listeners
-        document.getElementById('sortBy').addEventListener('change', updateDisplay);
-        document.getElementById('sortOrder').addEventListener('change', updateDisplay);
-        document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-        document.getElementById('lightbox').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) {
-                closeLightbox();
+            if (sortOrder === 'desc') {
+                return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+            } else {
+                return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
             }
         });
+    }
 
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeLightbox();
-            }
-        });
+    function openLightbox(print) {
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
 
-        function updateDisplay() {
-            const sortBy = document.getElementById('sortBy').value;
-            const sortOrder = document.getElementById('sortOrder').value;
-            const sortedPrints = sortPrints(prints, sortBy, sortOrder);
-            renderPrints(sortedPrints);
-        }
+        lightboxImage.src = `https://via.placeholder.com/800x600/ecf0f1/7f8c8d?text=${encodeURIComponent(print.imageId)}`;
+        lightboxImage.alt = print.title;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 
-        // Initial render
-        renderPrints(prints);
-    </script>
+    function closeLightbox() {
+        const lightbox = document.getElementById('lightbox');
+        lightbox.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    function updateDisplay() {
+        const sortBy = document.getElementById('sortBy').value;
+        const sortOrder = document.getElementById('sortOrder').value;
+        const sorted = sortPrints(prints, sortBy, sortOrder);
+        renderPrints(sorted);
+    }
+
+    document.getElementById('sortBy').addEventListener('change', updateDisplay);
+    document.getElementById('sortOrder').addEventListener('change', updateDisplay);
+    document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeLightbox();
+    });
+</script>
 </body>
 </html>
