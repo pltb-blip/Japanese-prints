@@ -400,6 +400,42 @@
         let currentPrint = null;
         let currentSide = 'front'; // 'front' or 'back'
 
+        // Map of imageId to actual uploaded image filenames
+        const imageMap = {
+            'Kuroto_Bay': {
+                front: 'Image1.jpg', // First uploaded image
+                back: 'Image2.jpg'   // Second uploaded image
+            },
+            'starry_night': {
+                front: 'starry_night.jpg'
+            },
+            'pearl_earring': {
+                front: 'pearl_earring.jpg'
+            },
+            'persistence_memory': {
+                front: 'persistence_memory.jpg'
+            },
+            'water_lilies': {
+                front: 'water_lilies.jpg'
+            },
+            'american_gothic': {
+                front: 'american_gothic.jpg'
+            }
+        };
+
+        function getImageUrl(imageId, hasObverse, side = 'front') {
+            const imageInfo = imageMap[imageId];
+            if (!imageInfo) {
+                return `${imageId}.jpg`; // Fallback to original logic
+            }
+            
+            if (side === 'back' && hasObverse && imageInfo.back) {
+                return imageInfo.back;
+            }
+            
+            return imageInfo.front || `${imageId}.jpg`;
+        }
+
         function parseCSV(csvText) {
             const lines = csvText.trim().split('\n');
             const headers = lines[0].split(',').map(h => h.trim());
@@ -438,26 +474,14 @@
             return result;
         }
 
-        function getImageUrl(imageId, hasObverse, side = 'front') {
-            if (side === 'back' && hasObverse) {
-                // Try multiple possible back image naming conventions
-                const backVariations = [
-                    `${imageId}_back.jpg`,
-                    `${imageId}_Back.jpg`,
-                    `${imageId}_reverse.jpg`,
-                    `${imageId}_Reverse.jpg`,
-                    `${imageId}_obverse.jpg`,
-                    `${imageId}_Obverse.jpg`,
-                    `${imageId}b.jpg`,
-                    `${imageId}B.jpg`
-                ];
-                // For now, we'll return the first option and handle fallbacks in the image loading
-                return backVariations[0];
-            }
-            return `${imageId}.jpg`;
-        }
-        
         function tryImageSources(imgElement, imageId) {
+            const imageInfo = imageMap[imageId];
+            if (imageInfo && imageInfo.front) {
+                imgElement.src = imageInfo.front;
+                return;
+            }
+            
+            // Fallback to original logic if not in imageMap
             const extensions = ['.jpg', '.jpeg', '.png', '.gif'];
             const baseNames = [imageId, imageId.toLowerCase(), imageId.toUpperCase()];
             
@@ -511,6 +535,17 @@
         }
 
         function tryBackImageSources(imageId, callback) {
+            const imageInfo = imageMap[imageId];
+            if (imageInfo && imageInfo.back) {
+                // Test if the back image exists
+                const img = new Image();
+                img.onload = () => callback(imageInfo.back);
+                img.onerror = () => callback(null);
+                img.src = imageInfo.back;
+                return;
+            }
+            
+            // Fallback to original logic if not in imageMap
             const backVariations = [
                 `${imageId}_back.jpg`,
                 `${imageId}_Back.jpg`,
