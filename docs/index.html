@@ -391,7 +391,7 @@
         const lightbox = document.getElementById('lightbox');
         const lightboxImage = document.getElementById('lightboxImage');
 
-        lightboxImage.src = `https://via.placeholder.com/800x600/ecf0f1/7f8c8d?text=${encodeURIComponent(print.imageId)}`;
+        lightboxImage.src = `${print.imageId}.jpg`;
         lightboxImage.alt = print.title;
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
