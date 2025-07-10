@@ -198,8 +198,8 @@
         }
 
         .lightbox-image {
-            max-width: 100%;
-            max-height: 100%;
+            max-width: 95%;
+            max-height: 85%;
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -440,7 +440,19 @@
 
         function getImageUrl(imageId, hasObverse, side = 'front') {
             if (side === 'back' && hasObverse) {
-                return `${imageId}_back.jpg`;
+                // Try multiple possible back image naming conventions
+                const backVariations = [
+                    `${imageId}_back.jpg`,
+                    `${imageId}_Back.jpg`,
+                    `${imageId}_reverse.jpg`,
+                    `${imageId}_Reverse.jpg`,
+                    `${imageId}_obverse.jpg`,
+                    `${imageId}_Obverse.jpg`,
+                    `${imageId}b.jpg`,
+                    `${imageId}B.jpg`
+                ];
+                // For now, we'll return the first option and handle fallbacks in the image loading
+                return backVariations[0];
             }
             return `${imageId}.jpg`;
         }
@@ -498,14 +510,60 @@
             currentPrint = null;
         }
 
+        function tryBackImageSources(imageId, callback) {
+            const backVariations = [
+                `${imageId}_back.jpg`,
+                `${imageId}_Back.jpg`,
+                `${imageId}_reverse.jpg`,
+                `${imageId}_Reverse.jpg`,
+                `${imageId}_obverse.jpg`,
+                `${imageId}_Obverse.jpg`,
+                `${imageId}b.jpg`,
+                `${imageId}B.jpg`
+            ];
+            
+            let attemptIndex = 0;
+            
+            function tryNext() {
+                if (attemptIndex >= backVariations.length) {
+                    callback(null); // No back image found
+                    return;
+                }
+                
+                const img = new Image();
+                img.onload = () => callback(backVariations[attemptIndex]);
+                img.onerror = () => {
+                    attemptIndex++;
+                    tryNext();
+                };
+                img.src = backVariations[attemptIndex];
+            }
+            
+            tryNext();
+        }
+
         function updateLightboxImage() {
             if (!currentPrint) return;
             
             const lightboxImage = document.getElementById('lightboxImage');
             const hasObverse = currentPrint.hasObverse === 'TRUE';
             
-            lightboxImage.src = getImageUrl(currentPrint.imageId, hasObverse, currentSide);
-            lightboxImage.alt = `${currentPrint.title} - ${currentSide}`;
+            if (currentSide === 'back' && hasObverse) {
+                // Try to find the back image
+                tryBackImageSources(currentPrint.imageId, (backImageUrl) => {
+                    if (backImageUrl) {
+                        lightboxImage.src = backImageUrl;
+                        lightboxImage.alt = `${currentPrint.title} - back`;
+                    } else {
+                        // Fallback to front image if back not found
+                        lightboxImage.src = getImageUrl(currentPrint.imageId, false, 'front');
+                        lightboxImage.alt = `${currentPrint.title} - front (back not available)`;
+                    }
+                });
+            } else {
+                lightboxImage.src = getImageUrl(currentPrint.imageId, hasObverse, 'front');
+                lightboxImage.alt = `${currentPrint.title} - front`;
+            }
             
             // Update navigation buttons
             const prevBtn = document.getElementById('prevBtn');
