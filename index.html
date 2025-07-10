@@ -99,6 +99,7 @@
             opacity: 0;
             transform: translateY(20px);
             animation: fadeInUp 0.6s ease forwards;
+            cursor: pointer;
         }
 
         .print-card:hover {
@@ -168,6 +169,126 @@
             padding: 40px;
         }
 
+        /* Lightbox Styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .lightbox.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s ease;
+        }
+
+        .lightbox-close:hover {
+            color: #e74c3c;
+            transform: scale(1.1);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 60px;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 50%;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(0, 0, 0, 0.8);
+            color: #3498db;
+        }
+
+        .lightbox-nav.prev {
+            left: 30px;
+        }
+
+        .lightbox-nav.next {
+            right: 30px;
+        }
+
+        .lightbox-nav.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .lightbox-info {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 30px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .lightbox-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .lightbox-artist {
+            font-size: 1.1em;
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+
+        .lightbox-side {
+            font-size: 0.9em;
+            color: #bdc3c7;
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         @keyframes fadeInUp {
             to {
                 opacity: 1;
@@ -206,6 +327,25 @@
             h1 {
                 font-size: 2em;
             }
+
+            .lightbox-nav {
+                font-size: 40px;
+                padding: 8px 12px;
+            }
+
+            .lightbox-nav.prev {
+                left: 15px;
+            }
+
+            .lightbox-nav.next {
+                right: 15px;
+            }
+
+            .lightbox-close {
+                top: 15px;
+                right: 20px;
+                font-size: 30px;
+            }
         }
     </style>
 </head>
@@ -240,8 +380,25 @@
         </div>
     </div>
 
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
+        <div class="lightbox-nav prev" id="prevBtn" onclick="navigateImage(-1)">&#8249;</div>
+        <div class="lightbox-nav next" id="nextBtn" onclick="navigateImage(1)">&#8250;</div>
+        <div class="lightbox-content">
+            <img class="lightbox-image" id="lightboxImage" alt="">
+        </div>
+        <div class="lightbox-info" id="lightboxInfo">
+            <div class="lightbox-title" id="lightboxTitle"></div>
+            <div class="lightbox-artist" id="lightboxArtist"></div>
+            <div class="lightbox-side" id="lightboxSide"></div>
+        </div>
+    </div>
+
     <script>
         let prints = [];
+        let currentPrint = null;
+        let currentSide = 'front'; // 'front' or 'back'
 
         function parseCSV(csvText) {
             const lines = csvText.trim().split('\n');
@@ -281,13 +438,119 @@
             return result;
         }
 
-        function getImageUrl(imageId, hasObverse) {
-            // Create placeholder URLs based on the imageId
-            const colors = ['4a90e2', '2ecc71', 'f39c12', 'e74c3c', '9b59b6', '34495e'];
-            const colorIndex = Math.abs(imageId.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % colors.length;
-            const color = colors[colorIndex];
+        function getImageUrl(imageId, hasObverse, side = 'front') {
+            if (side === 'back' && hasObverse) {
+                return `${imageId}_back.jpg`;
+            }
+            return `${imageId}.jpg`;
+        }
+        
+        function tryImageSources(imgElement, imageId) {
+            const extensions = ['.jpg', '.jpeg', '.png', '.gif'];
+            const baseNames = [imageId, imageId.toLowerCase(), imageId.toUpperCase()];
             
-            return `https://via.placeholder.com/300x250/${color}/ffffff?text=${encodeURIComponent(imageId.replace('_', '+'))}`;
+            let attemptIndex = 0;
+            
+            function tryNext() {
+                if (attemptIndex >= extensions.length * baseNames.length) {
+                    imgElement.style.display = 'none';
+                    imgElement.parentElement.innerHTML = `<span>Image not found: ${imageId}</span>`;
+                    return;
+                }
+                
+                const extIndex = attemptIndex % extensions.length;
+                const nameIndex = Math.floor(attemptIndex / extensions.length);
+                const testUrl = `${baseNames[nameIndex]}${extensions[extIndex]}`;
+                
+                imgElement.onerror = () => {
+                    attemptIndex++;
+                    tryNext();
+                };
+                
+                imgElement.src = testUrl;
+                attemptIndex++;
+            }
+            
+            tryNext();
+        }
+
+        function openLightbox(print) {
+            currentPrint = print;
+            currentSide = 'front';
+            
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightboxImage');
+            const lightboxTitle = document.getElementById('lightboxTitle');
+            const lightboxArtist = document.getElementById('lightboxArtist');
+            const lightboxSide = document.getElementById('lightboxSide');
+            
+            updateLightboxImage();
+            updateLightboxInfo();
+            
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            currentPrint = null;
+        }
+
+        function updateLightboxImage() {
+            if (!currentPrint) return;
+            
+            const lightboxImage = document.getElementById('lightboxImage');
+            const hasObverse = currentPrint.hasObverse === 'TRUE';
+            
+            lightboxImage.src = getImageUrl(currentPrint.imageId, hasObverse, currentSide);
+            lightboxImage.alt = `${currentPrint.title} - ${currentSide}`;
+            
+            // Update navigation buttons
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (hasObverse) {
+                prevBtn.classList.remove('disabled');
+                nextBtn.classList.remove('disabled');
+                prevBtn.style.display = 'block';
+                nextBtn.style.display = 'block';
+            } else {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+            }
+        }
+
+        function updateLightboxInfo() {
+            if (!currentPrint) return;
+            
+            const lightboxTitle = document.getElementById('lightboxTitle');
+            const lightboxArtist = document.getElementById('lightboxArtist');
+            const lightboxSide = document.getElementById('lightboxSide');
+            
+            lightboxTitle.textContent = currentPrint.title;
+            lightboxArtist.textContent = `by ${currentPrint.artist}`;
+            
+            const hasObverse = currentPrint.hasObverse === 'TRUE';
+            if (hasObverse) {
+                lightboxSide.textContent = `${currentSide.charAt(0).toUpperCase() + currentSide.slice(1)} side - Use arrow keys to flip`;
+            } else {
+                lightboxSide.textContent = '';
+            }
+        }
+
+        function navigateImage(direction) {
+            if (!currentPrint || currentPrint.hasObverse !== 'TRUE') return;
+            
+            if (direction === 1) {
+                currentSide = currentSide === 'front' ? 'back' : 'front';
+            } else {
+                currentSide = currentSide === 'front' ? 'back' : 'front';
+            }
+            
+            updateLightboxImage();
+            updateLightboxInfo();
         }
 
         function displayPrints(printsToShow) {
@@ -305,11 +568,9 @@
                 printCard.className = 'print-card';
                 printCard.style.animationDelay = `${index * 0.1}s`;
                 
-                const imageUrl = getImageUrl(print.imageId, print.hasObverse === 'TRUE');
-                
                 printCard.innerHTML = `
                     <div class="print-image">
-                        <img src="${imageUrl}" alt="${print.title}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span>Image not available</span>'">
+                        <img alt="${print.title}" onerror="tryImageSources(this, '${print.imageId}')">
                     </div>
                     <div class="print-info">
                         <div class="print-title">${print.title}</div>
@@ -318,6 +579,13 @@
                         <div class="print-description">${print.description}</div>
                     </div>
                 `;
+                
+                // Set initial image source
+                const img = printCard.querySelector('img');
+                img.src = getImageUrl(print.imageId, print.hasObverse === 'TRUE');
+                
+                // Add click event to open lightbox
+                printCard.addEventListener('click', () => openLightbox(print));
                 
                 gallery.appendChild(printCard);
             });
@@ -396,6 +664,30 @@
                     `;
                 });
         }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (document.getElementById('lightbox').classList.contains('active')) {
+                switch(e.key) {
+                    case 'Escape':
+                        closeLightbox();
+                        break;
+                    case 'ArrowLeft':
+                        navigateImage(-1);
+                        break;
+                    case 'ArrowRight':
+                        navigateImage(1);
+                        break;
+                }
+            }
+        });
+
+        // Close lightbox when clicking outside the image
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLightbox();
+            }
+        });
 
         // Initialize the gallery
         document.addEventListener('DOMContentLoaded', function() {
