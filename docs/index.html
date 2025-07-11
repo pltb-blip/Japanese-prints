@@ -298,79 +298,66 @@
     </div>
 
     <script>
-        // Sample data matching your CSV
-        const prints = [
-            {
-                id: 1,
-                title: "Starry Night Over the Rhône",
-                artist: "Vincent van Gogh",
-                date: "1888",
-                dateAcquired: "3/15/2023",
-                description: "A beautiful reproduction of van Gogh's masterpiece depicting the night sky reflected in water.",
-                imageId: "Starry_Night",
-                hasObverse: false
-            },
-            {
-                id: 2,
-                title: "36 Views of Mt. Fuji (image 7 - Kuroto Bay)",
-                artist: "Utagawa Hiroshige (1797 - 1858)",
-                date: "1831",
-                dateAcquired: "11/8/2022",
-                description: "Thirty-six Views of Mt. Fuji (Fuji sanjurokkei)",
-                imageId: "Kuroto_Bay",
-                hasObverse: true
-            },
-            {
-                id: 3,
-                title: "Girl with a Pearl Earring",
-                artist: "Johannes Vermeer",
-                date: "1665",
-                dateAcquired: "7/22/2023",
-                description: "Reproduction of Vermeer's mysterious portrait of a girl with an exotic pearl earring.",
-                imageId: "Pearl_Earring",
-                hasObverse: false
-            },
-            {
-                id: 4,
-                title: "The Persistence of Memory",
-                artist: "Salvador Dalí",
-                date: "1931",
-                dateAcquired: "1/10/2023",
-                description: "Surrealist masterpiece featuring melting clocks in a dreamlike landscape.",
-                imageId: "Persistence_Memory",
-                hasObverse: false
-            },
-            {
-                id: 5,
-                title: "100 Famous Views of Edo (image 40 - Spring)",
-                artist: "Utagawa Hiroshige (1797 - 1858)",
-                date: "1919",
-                dateAcquired: "9/3/2022",
-                description: "Series of prints depicting famous views",
-                imageId: "Spring",
-                hasObverse: true
-            },
-            {
-                id: 6,
-                title: "American Gothic",
-                artist: "Grant Wood",
-                date: "1930",
-                dateAcquired: "5/17/2023",
-                description: "Iconic American painting depicting a farmer and his daughter in front of their home.",
-                imageId: "American_Gothic",
-                hasObverse: false
+        let prints = [];
+
+        // Function to load prints from file
+        async function loadPrints() {
+            try {
+                const response = await fetch('prints.txt');
+                const text = await response.text();
+                const lines = text.trim().split('\n');
+                
+                prints = lines.map((line, index) => {
+                    const [title, artist, date, dateAcquired, description, imageId, hasObverse] = line.split('\t');
+                    return {
+                        id: index + 1,
+                        title: title || 'Untitled',
+                        artist: artist || 'Unknown Artist',
+                        date: date || 'Unknown',
+                        dateAcquired: dateAcquired || 'Unknown',
+                        description: description || 'No description available',
+                        imageId: imageId || 'placeholder',
+                        hasObverse: hasObverse === 'true'
+                    };
+                });
+                
+                // Initial render after loading data
+                renderPrints(prints);
+            } catch (error) {
+                console.error('Error loading prints:', error);
+                // Fallback to sample data if file can't be loaded
+                prints = [
+                    {
+                        id: 1,
+                        title: "Sample Print",
+                        artist: "Unknown Artist",
+                        date: "Unknown",
+                        dateAcquired: "Unknown",
+                        description: "Could not load prints.txt file. Please ensure the file exists in the same directory.",
+                        imageId: "placeholder",
+                        hasObverse: false
+                    }
+                ];
+                renderPrints(prints);
             }
-        ];
+        }
 
         // Function to create print cards
         function createPrintCard(print) {
             const card = document.createElement('div');
             card.className = 'print-card';
+            
+            // Use the actual image file name, fallback to placeholder if no imageId
+            const imageSrc = print.imageId && print.imageId !== 'placeholder' 
+                ? `${print.imageId}.jpg` 
+                : `https://via.placeholder.com/400x300/ecf0f1/7f8c8d?text=${encodeURIComponent(print.title)}`;
+            
             card.innerHTML = `
                 <div class="print-image">
-                    <img src="https://via.placeholder.com/400x300/ecf0f1/7f8c8d?text=${print.imageId}" 
+                    <img src="${imageSrc}" 
                          alt="${print.title}" 
-                         loading="lazy">
+                         loading="lazy"
+                         onerror="this.src='https://via.placeholder.com/400x300/ecf0f1/7f8c8d?text=${encodeURIComponent(print.title)}'">
                 </div>
                 <div class="print-info">
                     <div class="print-title">${print.title}</div>
@@ -432,7 +419,12 @@
             const lightbox = document.getElementById('lightbox');
             const lightboxImage = document.getElementById('lightboxImage');
             
-            lightboxImage.src = `https://via.placeholder.com/800x600/ecf0f1/7f8c8d?text=${print.imageId}`;
+            // Use the actual image file name for lightbox
+            const imageSrc = print.imageId && print.imageId !== 'placeholder' 
+                ? `${print.imageId}.jpg` 
+                : `https://via.placeholder.com/800x600/ecf0f1/7f8c8d?text=${encodeURIComponent(print.title)}`;
+            
+            lightboxImage.src = imageSrc;
             lightboxImage.alt = print.title;
             lightbox.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -468,8 +460,8 @@
             renderPrints(sortedPrints);
         }
 
-        // Initial render
-        renderPrints(prints);
+        // Initial load
+        loadPrints();
     </script>
 </body>
 </html>
