@@ -121,10 +121,106 @@
             height: 300px;
             object-fit: cover;
             transition: transform 0.4s ease;
+            cursor: pointer;
         }
 
         .print-card:hover .print-image {
             transform: scale(1.05);
+        }
+
+        /* Fullscreen modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            max-width: 95vw;
+            max-height: 95vh;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: zoomIn 0.3s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s ease;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-close:hover {
+            color: #ff6b6b;
+            transform: scale(1.1);
+        }
+
+        .modal-info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 80vw;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .modal-artist {
+            font-size: 1.1em;
+            color: #ff9ff3;
+            margin-bottom: 3px;
+        }
+
+        .modal-series {
+            font-size: 0.9em;
+            color: #74b9ff;
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .print-info {
@@ -270,6 +366,17 @@
         <div id="gallery" class="gallery">
             <div class="loading">Loading prints collection...</div>
         </div>
+
+        <!-- Fullscreen Image Modal -->
+        <div id="imageModal" class="modal">
+            <span class="modal-close">&times;</span>
+            <img id="modalImage" class="modal-content" alt="">
+            <div id="modalInfo" class="modal-info">
+                <div class="modal-title"></div>
+                <div class="modal-artist"></div>
+                <div class="modal-series"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -326,6 +433,7 @@
                 
                 card.innerHTML = `
                     <img src="${imageFileName}" alt="${print.Title}" class="print-image" 
+                         onclick="openModal('${imageFileName}', '${print.Title.replace(/'/g, "\\'")}', '${print.Artist.replace(/'/g, "\\'")}', '${(print.Series || '').replace(/'/g, "\\'")}')"
                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOWZhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzZjNzU3ZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4='">
                     <div class="print-info">
                         <div class="print-title">${print.Title}</div>
@@ -382,9 +490,50 @@
             gallery.innerHTML = `<div class="error">${message}</div>`;
         }
 
+        // Modal functions
+        function openModal(imageSrc, title, artist, series) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const modalInfo = document.getElementById('modalInfo');
+            
+            modal.classList.add('show');
+            modalImg.src = imageSrc;
+            modalImg.alt = title;
+            
+            // Update modal info
+            modalInfo.querySelector('.modal-title').textContent = title;
+            modalInfo.querySelector('.modal-artist').textContent = artist;
+            modalInfo.querySelector('.modal-series').textContent = series;
+            
+            // Hide body scroll
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
         // Event listeners
         document.getElementById('sortBy').addEventListener('change', sortPrints);
         document.getElementById('sortOrder').addEventListener('change', sortPrints);
+
+        // Modal event listeners
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        document.querySelector('.modal-close').addEventListener('click', closeModal);
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
 
         // Load prints when page loads
         window.addEventListener('load', loadPrints);
