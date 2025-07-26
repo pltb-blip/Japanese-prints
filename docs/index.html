@@ -175,38 +175,6 @@
             transform: scale(1.1);
         }
 
-        .modal-info {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 80vw;
-            backdrop-filter: blur(10px);
-        }
-
-        .modal-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .modal-artist {
-            font-size: 1.1em;
-            color: #ff9ff3;
-            margin-bottom: 3px;
-        }
-
-        .modal-series {
-            font-size: 0.9em;
-            color: #74b9ff;
-            font-style: italic;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -227,19 +195,19 @@
             padding: 25px;
         }
 
+        .print-artist {
+            font-size: 1.3em;
+            color: #e74c3c;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
         .print-title {
-            font-size: 1.4em;
+            font-size: 1.2em;
             font-weight: bold;
             color: #2c3e50;
             margin-bottom: 10px;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .print-artist {
-            font-size: 1.1em;
-            color: #e74c3c;
-            margin-bottom: 8px;
-            font-weight: 600;
         }
 
         .print-series {
@@ -371,11 +339,6 @@
         <div id="imageModal" class="modal">
             <span class="modal-close">&times;</span>
             <img id="modalImage" class="modal-content" alt="">
-            <div id="modalInfo" class="modal-info">
-                <div class="modal-title"></div>
-                <div class="modal-artist"></div>
-                <div class="modal-series"></div>
-            </div>
         </div>
     </div>
 
@@ -433,11 +396,11 @@
                 
                 card.innerHTML = `
                     <img src="${imageFileName}" alt="${print.Title}" class="print-image" 
-                         onclick="openModal('${imageFileName}', '${print.Title.replace(/'/g, "\\'")}', '${print.Artist.replace(/'/g, "\\'")}', '${(print.Series || '').replace(/'/g, "\\'")}')"
+                         onclick="openModal('${imageFileName}', '${print.Title.replace(/'/g, "\\'")}')"
                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOWZhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzZjNzU3ZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4='">
                     <div class="print-info">
-                        <div class="print-title">${print.Title}</div>
                         <div class="print-artist">${print.Artist}</div>
+                        <div class="print-title">${print.Title}</div>
                         ${print.Series ? `<div class="print-series">${print.Series}</div>` : ''}
                         ${print['Date published'] ? `<div class="print-date">Published: ${print['Date published']}</div>` : ''}
                         ${print.Publisher ? `<div class="print-publisher">Publisher: ${print.Publisher}</div>` : ''}
@@ -491,19 +454,13 @@
         }
 
         // Modal functions
-        function openModal(imageSrc, title, artist, series) {
+        function openModal(imageSrc, title) {
             const modal = document.getElementById('imageModal');
             const modalImg = document.getElementById('modalImage');
-            const modalInfo = document.getElementById('modalInfo');
             
             modal.classList.add('show');
             modalImg.src = imageSrc;
             modalImg.alt = title;
-            
-            // Update modal info
-            modalInfo.querySelector('.modal-title').textContent = title;
-            modalInfo.querySelector('.modal-artist').textContent = artist;
-            modalInfo.querySelector('.modal-series').textContent = series;
             
             // Hide body scroll
             document.body.style.overflow = 'hidden';
