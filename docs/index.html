@@ -15,7 +15,7 @@
         body {
             font-family: 'Georgia', serif;
             line-height: 1.6;
-            color: #2c3e50;
+            color: #000000;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
         }
@@ -37,14 +37,14 @@
         }
 
         h1 {
-            color: #2c3e50;
+            color: #000000;
             font-size: 2.5em;
             margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .subtitle {
-            color: #7f8c8d;
+            color: #000000;
             font-size: 1.2em;
             font-style: italic;
         }
@@ -70,7 +70,7 @@
 
         label {
             font-weight: bold;
-            color: #34495e;
+            color: #000000;
         }
 
         select {
@@ -78,7 +78,7 @@
             border: 2px solid #bdc3c7;
             border-radius: 8px;
             background: white;
-            color: #2c3e50;
+            color: #000000;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -139,6 +139,7 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(10px);
+            overflow: hidden;
         }
 
         .modal.show {
@@ -148,13 +149,30 @@
             animation: fadeIn 0.3s ease;
         }
 
+        .modal-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
         .modal-content {
-            max-width: 95vw;
-            max-height: 95vh;
+            max-width: none;
+            max-height: none;
             object-fit: contain;
             border-radius: 10px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             animation: zoomIn 0.3s ease;
+            cursor: grab;
+            transition: transform 0.1s ease-out;
+            transform-origin: center center;
+        }
+
+        .modal-content:active {
+            cursor: grabbing;
         }
 
         .modal-close {
@@ -173,6 +191,55 @@
         .modal-close:hover {
             color: #ff6b6b;
             transform: scale(1.1);
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1001;
+        }
+
+        .zoom-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .zoom-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        .zoom-reset {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .zoom-reset:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         @keyframes fadeIn {
@@ -197,7 +264,7 @@
 
         .print-artist {
             font-size: 1.3em;
-            color: #e74c3c;
+            color: #000000;
             margin-bottom: 10px;
             font-weight: 600;
         }
@@ -205,32 +272,32 @@
         .print-title {
             font-size: 1.2em;
             font-weight: bold;
-            color: #2c3e50;
+            color: #000000;
             margin-bottom: 10px;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .print-series {
-            color: #8e44ad;
+            color: #000000;
             font-style: italic;
             margin-bottom: 8px;
             font-size: 0.95em;
         }
 
         .print-date {
-            color: #27ae60;
+            color: #000000;
             font-weight: bold;
             margin-bottom: 8px;
         }
 
         .print-publisher {
-            color: #f39c12;
+            color: #000000;
             font-size: 0.9em;
             margin-bottom: 10px;
         }
 
         .print-description {
-            color: #7f8c8d;
+            color: #000000;
             font-size: 0.9em;
             line-height: 1.5;
             margin-top: 10px;
@@ -242,13 +309,13 @@
             text-align: center;
             padding: 50px;
             font-size: 1.2em;
-            color: #7f8c8d;
+            color: #000000;
         }
 
         .error {
             text-align: center;
             padding: 50px;
-            color: #e74c3c;
+            color: #000000;
             font-size: 1.1em;
             background: rgba(231, 76, 60, 0.1);
             border-radius: 10px;
@@ -276,6 +343,18 @@
             
             .print-card {
                 margin: 0 10px;
+            }
+
+            .zoom-controls {
+                bottom: 20px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .zoom-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
             }
         }
 
@@ -338,12 +417,22 @@
         <!-- Fullscreen Image Modal -->
         <div id="imageModal" class="modal">
             <span class="modal-close">&times;</span>
-            <img id="modalImage" class="modal-content" alt="">
+            <div class="modal-container">
+                <img id="modalImage" class="modal-content" alt="">
+            </div>
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoomOut">−</button>
+                <button class="zoom-reset" id="zoomReset">Reset</button>
+                <button class="zoom-btn" id="zoomIn">+</button>
+            </div>
         </div>
     </div>
 
     <script>
         let printsData = [];
+        let currentZoom = 1;
+        let isDragging = false;
+        let startX, startY, translateX = 0, translateY = 0;
 
         // Load and parse CSV data
         async function loadPrints() {
@@ -453,7 +542,7 @@
             gallery.innerHTML = `<div class="error">${message}</div>`;
         }
 
-        // Modal functions
+        // Modal and zoom functions
         function openModal(imageSrc, title) {
             const modal = document.getElementById('imageModal');
             const modalImg = document.getElementById('modalImage');
@@ -461,6 +550,12 @@
             modal.classList.add('show');
             modalImg.src = imageSrc;
             modalImg.alt = title;
+            
+            // Reset zoom and position
+            currentZoom = 1;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
             
             // Hide body scroll
             document.body.style.overflow = 'hidden';
@@ -470,6 +565,73 @@
             const modal = document.getElementById('imageModal');
             modal.classList.remove('show');
             document.body.style.overflow = 'auto';
+        }
+
+        function updateImageTransform() {
+            const modalImg = document.getElementById('modalImage');
+            modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+        }
+
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom * 1.3, 5);
+            updateImageTransform();
+        }
+
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom / 1.3, 0.5);
+            updateImageTransform();
+        }
+
+        function resetZoom() {
+            currentZoom = 1;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
+        }
+
+        // Mouse/touch drag functionality
+        function handleMouseDown(e) {
+            if (currentZoom > 1) {
+                isDragging = true;
+                startX = e.clientX - translateX;
+                startY = e.clientY - translateY;
+                e.preventDefault();
+            }
+        }
+
+        function handleMouseMove(e) {
+            if (isDragging && currentZoom > 1) {
+                translateX = e.clientX - startX;
+                translateY = e.clientY - startY;
+                updateImageTransform();
+            }
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+        }
+
+        // Touch events for mobile
+        function handleTouchStart(e) {
+            if (currentZoom > 1 && e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - translateX;
+                startY = e.touches[0].clientY - translateY;
+                e.preventDefault();
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (isDragging && currentZoom > 1 && e.touches.length === 1) {
+                translateX = e.touches[0].clientX - startX;
+                translateY = e.touches[0].clientY - startY;
+                updateImageTransform();
+                e.preventDefault();
+            }
+        }
+
+        function handleTouchEnd() {
+            isDragging = false;
         }
 
         // Event listeners
@@ -484,6 +646,31 @@
         });
 
         document.querySelector('.modal-close').addEventListener('click', closeModal);
+
+        // Zoom control event listeners
+        document.getElementById('zoomIn').addEventListener('click', zoomIn);
+        document.getElementById('zoomOut').addEventListener('click', zoomOut);
+        document.getElementById('zoomReset').addEventListener('click', resetZoom);
+
+        // Drag event listeners
+        document.getElementById('modalImage').addEventListener('mousedown', handleMouseDown);
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+
+        // Touch event listeners
+        document.getElementById('modalImage').addEventListener('touchstart', handleTouchStart);
+        document.addEventListener('touchmove', handleTouchMove);
+        document.addEventListener('touchend', handleTouchEnd);
+
+        // Mouse wheel zoom
+        document.getElementById('imageModal').addEventListener('wheel', function(e) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                zoomIn();
+            } else {
+                zoomOut();
+            }
+        });
 
         // Close modal with Escape key
         document.addEventListener('keydown', function(e) {
