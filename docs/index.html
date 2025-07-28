@@ -708,13 +708,13 @@
         document.getElementById('imageModal').addEventListener('touchmove', handleTouchMove, { passive: false });
         document.getElementById('imageModal').addEventListener('touchend', handleTouchEnd);
 
-        // Mouse wheel zoom
+        // Mouse wheel zoom (reversed direction)
         document.getElementById('imageModal').addEventListener('wheel', function(e) {
             e.preventDefault();
             if (e.deltaY < 0) {
-                zoomIn();
-            } else {
                 zoomOut();
+            } else {
+                zoomIn();
             }
         });
 
