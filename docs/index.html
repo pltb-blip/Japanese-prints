@@ -169,6 +169,10 @@
             cursor: grab;
             transition: transform 0.1s ease-out;
             transform-origin: center center;
+            user-select: none;
+            -webkit-user-drag: none;
+            -moz-user-select: none;
+            -webkit-user-select: none;
         }
 
         .modal-content:active {
@@ -570,6 +574,13 @@
         function updateImageTransform() {
             const modalImg = document.getElementById('modalImage');
             modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
+            
+            // Update cursor based on zoom level
+            if (currentZoom > 1) {
+                modalImg.style.cursor = isDragging ? 'grabbing' : 'grab';
+            } else {
+                modalImg.style.cursor = 'grab';
+            }
         }
 
         function zoomIn() {
@@ -595,7 +606,12 @@
                 isDragging = true;
                 startX = e.clientX - translateX;
                 startY = e.clientY - translateY;
+                
+                // Change cursor and prevent default behaviors
+                document.body.style.cursor = 'grabbing';
+                document.getElementById('modalImage').style.cursor = 'grabbing';
                 e.preventDefault();
+                e.stopPropagation();
             }
         }
 
@@ -604,11 +620,18 @@
                 translateX = e.clientX - startX;
                 translateY = e.clientY - startY;
                 updateImageTransform();
+                e.preventDefault();
             }
         }
 
-        function handleMouseUp() {
-            isDragging = false;
+        function handleMouseUp(e) {
+            if (isDragging) {
+                isDragging = false;
+                document.body.style.cursor = 'auto';
+                document.getElementById('modalImage').style.cursor = currentZoom > 1 ? 'grab' : 'grab';
+                e.preventDefault();
+                e.stopPropagation();
+            }
         }
 
         // Touch events for mobile
@@ -618,6 +641,7 @@
                 startX = e.touches[0].clientX - translateX;
                 startY = e.touches[0].clientY - translateY;
                 e.preventDefault();
+                e.stopPropagation();
             }
         }
 
@@ -630,8 +654,12 @@
             }
         }
 
-        function handleTouchEnd() {
-            isDragging = false;
+        function handleTouchEnd(e) {
+            if (isDragging) {
+                isDragging = false;
+                e.preventDefault();
+                e.stopPropagation();
+            }
         }
 
         // Event listeners
@@ -652,15 +680,19 @@
         document.getElementById('zoomOut').addEventListener('click', zoomOut);
         document.getElementById('zoomReset').addEventListener('click', resetZoom);
 
-        // Drag event listeners
-        document.getElementById('modalImage').addEventListener('mousedown', handleMouseDown);
+        // Drag event listeners - attach to modal container for better event handling
+        document.getElementById('imageModal').addEventListener('mousedown', handleMouseDown);
+        document.getElementById('imageModal').addEventListener('mousemove', handleMouseMove);
+        document.getElementById('imageModal').addEventListener('mouseup', handleMouseUp);
+        
+        // Also add to document to catch mouse events outside modal
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
 
         // Touch event listeners
-        document.getElementById('modalImage').addEventListener('touchstart', handleTouchStart);
-        document.addEventListener('touchmove', handleTouchMove);
-        document.addEventListener('touchend', handleTouchEnd);
+        document.getElementById('imageModal').addEventListener('touchstart', handleTouchStart, { passive: false });
+        document.getElementById('imageModal').addEventListener('touchmove', handleTouchMove, { passive: false });
+        document.getElementById('imageModal').addEventListener('touchend', handleTouchEnd);
 
         // Mouse wheel zoom
         document.getElementById('imageModal').addEventListener('wheel', function(e) {
