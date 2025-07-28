@@ -156,12 +156,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            overflow: auto;
+            padding: 60px 20px 100px 20px; /* Space for controls */
         }
 
         .modal-content {
-            max-width: none;
-            max-height: none;
+            max-width: 95vw;
+            max-height: calc(95vh - 160px); /* Account for controls and padding */
+            width: auto;
+            height: auto;
             object-fit: contain;
             border-radius: 10px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -326,7 +329,7 @@
             margin: 20px 0;
         }
 
-        @media (max-width: 768px) {
+            @media (max-width: 768px) {
             .container {
                 padding: 10px;
             }
@@ -347,6 +350,15 @@
             
             .print-card {
                 margin: 0 10px;
+            }
+
+            .modal-container {
+                padding: 40px 10px 80px 10px;
+            }
+
+            .modal-content {
+                max-width: 95vw;
+                max-height: calc(95vh - 120px);
             }
 
             .zoom-controls {
@@ -559,7 +571,31 @@
             currentZoom = 1;
             translateX = 0;
             translateY = 0;
-            updateImageTransform();
+            
+            // Wait for image to load, then ensure it fits properly
+            modalImg.onload = function() {
+                // Reset any transforms to get natural size
+                modalImg.style.transform = 'none';
+                
+                // Get container and image dimensions
+                const container = document.querySelector('.modal-container');
+                const containerWidth = container.clientWidth - 40; // Account for padding
+                const containerHeight = container.clientHeight - 160; // Account for controls
+                
+                const imgWidth = modalImg.naturalWidth;
+                const imgHeight = modalImg.naturalHeight;
+                
+                // Calculate scale to fit the whole image in the container
+                const scaleX = containerWidth / imgWidth;
+                const scaleY = containerHeight / imgHeight;
+                const fitScale = Math.min(scaleX, scaleY, 1); // Don't scale up beyond 100%
+                
+                // Apply the fit scale as our base zoom
+                currentZoom = fitScale;
+                translateX = 0;
+                translateY = 0;
+                updateImageTransform();
+            };
             
             // Hide body scroll
             document.body.style.overflow = 'hidden';
@@ -594,7 +630,20 @@
         }
 
         function resetZoom() {
-            currentZoom = 1;
+            // Recalculate the fit-to-screen scale
+            const modalImg = document.getElementById('modalImage');
+            const container = document.querySelector('.modal-container');
+            const containerWidth = container.clientWidth - 40;
+            const containerHeight = container.clientHeight - 160;
+            
+            const imgWidth = modalImg.naturalWidth;
+            const imgHeight = modalImg.naturalHeight;
+            
+            const scaleX = containerWidth / imgWidth;
+            const scaleY = containerHeight / imgHeight;
+            const fitScale = Math.min(scaleX, scaleY, 1);
+            
+            currentZoom = fitScale;
             translateX = 0;
             translateY = 0;
             updateImageTransform();
