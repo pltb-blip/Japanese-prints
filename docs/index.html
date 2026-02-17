@@ -496,12 +496,15 @@
                 card.className = 'print-card';
                 card.style.animationDelay = `${(index % 6) * 0.1}s`;
                 
+                const baseUrl = 'https://github.com/pltb-blip/Japanese-prints/releases/download/0.1/';
                 const imageFileName = print['Image file name'] || '';
+                const imageUrl = imageFileName ? baseUrl + imageFileName : '';
+               
                 const description = print.Description || '';
                 
                 card.innerHTML = `
-                    <img src="${imageFileName}" alt="${print.Title}" class="print-image" 
-                         onclick="openModal('${imageFileName}', '${print.Title.replace(/'/g, "\\'")}')"
+                    <img src="${imageUrl }" alt="${print.Title}" class="print-image" 
+                         onclick="openModal('${imageUrl}', '${print.Title.replace(/'/g, "\\'")}')"
                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOWZhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzZjNzU3ZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4='">
                     <div class="print-info">
                         <div class="print-artist">${print.Artist}</div>
