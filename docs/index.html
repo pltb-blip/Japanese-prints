@@ -1,53 +1,35 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/Simon/Downloads/index_1.html -->
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japanese Prints Collection</title>
-    <script src="./Japanese Prints Collection_files/papaparse.min.js.download"></script>
+    <!-- FIX 1: Load PapaParse from CDN instead of broken local path -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Georgia', serif;
             line-height: 1.6;
-            color: #000000;
+            color: #000;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
         header {
             text-align: center;
             margin-bottom: 40px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255,255,255,0.9);
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
 
-        h1 {
-            color: #000000;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .subtitle {
-            color: #000000;
-            font-size: 1.2em;
-            font-style: italic;
-        }
+        h1 { color: #000; font-size: 2.5em; margin-bottom: 10px; }
+        .subtitle { color: #333; font-size: 1.2em; font-style: italic; }
 
         .controls {
             display: flex;
@@ -61,59 +43,48 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255,255,255,0.8);
             padding: 15px 20px;
             border-radius: 25px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        label {
-            font-weight: bold;
-            color: #000000;
-        }
+        label { font-weight: bold; color: #000; }
 
         select {
             padding: 8px 15px;
             border: 2px solid #bdc3c7;
             border-radius: 8px;
             background: white;
-            color: #000000;
+            color: #000;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        select:hover {
-            border-color: #3498db;
-            transform: translateY(-1px);
-        }
-
-        select:focus {
-            outline: none;
-            border-color: #2980b9;
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
-        }
+        select:hover { border-color: #3498db; transform: translateY(-1px); }
+        select:focus { outline: none; border-color: #2980b9; box-shadow: 0 0 10px rgba(52,152,219,0.3); }
 
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
             gap: 30px;
             margin-top: 30px;
         }
 
         .print-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255,0.95);
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             overflow: hidden;
             transition: all 0.4s ease;
-            backdrop-filter: blur(10px);
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
         }
 
         .print-card:hover {
             transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
         }
 
         .print-image {
@@ -124,21 +95,103 @@
             cursor: pointer;
         }
 
-        .print-card:hover .print-image {
-            transform: scale(1.05);
+        .print-card:hover .print-image { transform: scale(1.05); }
+
+        .print-info { padding: 25px; }
+
+        .print-artist { font-size: 1.2em; font-weight: 600; color: #1a1a2e; margin-bottom: 6px; }
+        .print-title { font-size: 1.1em; font-weight: bold; color: #16213e; margin-bottom: 8px; }
+        .print-series { color: #444; font-style: italic; margin-bottom: 6px; font-size: 0.95em; }
+        .print-date { color: #333; font-weight: bold; margin-bottom: 6px; font-size: 0.9em; }
+        .print-publisher { color: #555; font-size: 0.9em; margin-bottom: 10px; }
+
+        /* --- Structured description styles --- */
+        .print-description {
+            font-size: 0.88em;
+            line-height: 1.6;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+            color: #333;
         }
 
-        /* Fullscreen modal styles */
+        .print-description p { margin-bottom: 8px; }
+        .print-description p:last-child { margin-bottom: 0; }
+
+        .print-description ul {
+            margin: 6px 0 8px 18px;
+            padding: 0;
+        }
+
+        .print-description ul li { margin-bottom: 3px; }
+
+        .desc-dimensions {
+            display: inline-block;
+            background: #f0f4f8;
+            border-left: 3px solid #8aa4c8;
+            padding: 4px 10px;
+            margin: 6px 0;
+            font-size: 0.9em;
+            color: #555;
+            border-radius: 0 6px 6px 0;
+            font-style: italic;
+        }
+
+        .desc-poem {
+            border-left: 3px solid #c8a88a;
+            padding: 6px 12px;
+            margin: 8px 0;
+            background: #fdf8f3;
+            font-style: italic;
+            color: #5a4a3a;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .desc-link {
+            color: #2980b9;
+            word-break: break-all;
+            font-size: 0.85em;
+        }
+
+        .desc-replace {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 4px 10px;
+            color: #856404;
+            font-size: 0.85em;
+        }
+
+        /* Show/hide long descriptions */
+        .desc-toggle {
+            background: none;
+            border: none;
+            color: #2980b9;
+            font-size: 0.82em;
+            cursor: pointer;
+            padding: 2px 0;
+            text-decoration: underline;
+            font-family: inherit;
+            margin-top: 4px;
+        }
+
+        .desc-body.collapsed { max-height: 80px; overflow: hidden; position: relative; }
+        .desc-body.collapsed::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 30px;
+            background: linear-gradient(transparent, rgba(255,255,255,0.95));
+        }
+
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
             z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(10px);
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.95);
             overflow: hidden;
         }
 
@@ -151,54 +204,43 @@
 
         .modal-container {
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            padding: 80px 20px 120px 20px; /* Space for controls */
+            padding: 80px 20px 120px 20px;
         }
 
         .modal-content {
             max-width: 90vw;
             max-height: 80vh;
-            width: auto;
-            height: auto;
             object-fit: contain;
             border-radius: 10px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             animation: zoomIn 0.3s ease;
             cursor: grab;
             transition: transform 0.1s ease-out;
             transform-origin: center center;
             user-select: none;
             -webkit-user-drag: none;
-            -moz-user-select: none;
-            -webkit-user-select: none;
         }
 
-        .modal-content:active {
-            cursor: grabbing;
-        }
+        .modal-content:active { cursor: grabbing; }
 
         .modal-close {
             position: absolute;
-            top: 20px;
-            right: 30px;
+            top: 20px; right: 30px;
             color: white;
             font-size: 40px;
             font-weight: bold;
             cursor: pointer;
             z-index: 1001;
             transition: all 0.3s ease;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
         }
 
-        .modal-close:hover {
-            color: #ff6b6b;
-            transform: scale(1.1);
-        }
+        .modal-close:hover { color: #ff6b6b; transform: scale(1.1); }
 
         .zoom-controls {
             position: absolute;
@@ -211,521 +253,409 @@
         }
 
         .zoom-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
             color: white;
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             border-radius: 50%;
             font-size: 24px;
             cursor: pointer;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .zoom-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: scale(1.1);
-        }
+        .zoom-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
 
         .zoom-reset {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
             color: white;
             padding: 10px 20px;
             border-radius: 25px;
             font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
         }
 
-        .zoom-reset:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
+        .zoom-reset:hover { background: rgba(255,255,255,0.3); }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes zoomIn {
-            from { 
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to { 
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .print-info {
-            padding: 25px;
-        }
-
-        .print-artist {
-            font-size: 1.3em;
-            color: #000000;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .print-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #000000;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        .print-series {
-            color: #000000;
-            font-style: italic;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-
-        .print-date {
-            color: #000000;
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .print-publisher {
-            color: #000000;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-        }
-
-        .print-description {
-            color: #000000;
-            font-size: 0.9em;
-            line-height: 1.5;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #ecf0f1;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 1.2em;
-            color: #000000;
-        }
+        .loading { text-align: center; padding: 50px; font-size: 1.2em; color: #333; }
 
         .error {
-            text-align: center;
-            padding: 50px;
-            color: #000000;
+            text-align: center; padding: 50px;
+            color: #721c24;
             font-size: 1.1em;
-            background: rgba(231, 76, 60, 0.1);
+            background: rgba(231,76,60,0.1);
             border-radius: 10px;
             margin: 20px 0;
         }
 
-            @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
-            
-            .controls {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .gallery {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .print-card {
-                margin: 0 10px;
-            }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-            .modal-container {
-                padding: 40px 10px 80px 10px;
-            }
+        .print-card:nth-child(1) { animation-delay: 0.05s; }
+        .print-card:nth-child(2) { animation-delay: 0.10s; }
+        .print-card:nth-child(3) { animation-delay: 0.15s; }
+        .print-card:nth-child(4) { animation-delay: 0.20s; }
+        .print-card:nth-child(5) { animation-delay: 0.25s; }
+        .print-card:nth-child(6) { animation-delay: 0.30s; }
 
-            .modal-content {
-                max-width: 95vw;
-                max-height: calc(95vh - 120px);
-            }
-
-            .zoom-controls {
-                bottom: 20px;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .zoom-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 20px;
-            }
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            h1 { font-size: 1.8em; }
+            .controls { flex-direction: column; align-items: center; }
+            .gallery { grid-template-columns: 1fr; gap: 20px; }
+            .print-card { margin: 0 5px; }
+            .modal-container { padding: 40px 10px 80px 10px; }
+            .modal-content { max-width: 95vw; max-height: calc(95vh - 120px); }
+            .zoom-controls { bottom: 20px; flex-wrap: wrap; justify-content: center; }
+            .zoom-btn { width: 45px; height: 45px; font-size: 20px; }
         }
-
-        /* Smooth fade-in animation */
-        .print-card {
-            opacity: 0;
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Stagger animation for cards */
-        .print-card:nth-child(1) { animation-delay: 0.1s; }
-        .print-card:nth-child(2) { animation-delay: 0.2s; }
-        .print-card:nth-child(3) { animation-delay: 0.3s; }
-        .print-card:nth-child(4) { animation-delay: 0.4s; }
-        .print-card:nth-child(5) { animation-delay: 0.5s; }
-        .print-card:nth-child(6) { animation-delay: 0.6s; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Japanese Woodblock Prints</h1>
-            <p class="subtitle">These are our favourite Japanese woodblock prints which we are studying.</p>
-        </header>
+<div class="container">
+    <header>
+        <h1>Japanese Woodblock Prints</h1>
+        <p class="subtitle">These are our favourite Japanese woodblock prints which we are studying.</p>
+    </header>
 
-        <div class="controls">
-            <div class="sort-group">
-                <label for="sortBy">Sort by:</label>
-                <select id="sortBy">
-                    <option value="artist">Artist</option>
-                    <option value="title">Title</option>
-                    <option value="series">Series</option>
-                    <option value="date">Date Published</option>
-                </select>
-            </div>
-            <div class="sort-group">
-                <label for="sortOrder">Order:</label>
-                <select id="sortOrder">
-                    <option value="asc">Ascending</option>
-                    <option value="desc">Descending</option>
-                </select>
-            </div>
+    <div class="controls">
+        <div class="sort-group">
+            <label for="sortBy">Sort by:</label>
+            <select id="sortBy">
+                <option value="artist">Artist</option>
+                <option value="title">Title</option>
+                <option value="series">Series</option>
+                <option value="date">Date Published</option>
+            </select>
         </div>
-
-        <div id="gallery" class="gallery"><div class="error">Error loading prints.csv: Failed to fetch. Please make sure the file exists in the same directory as this HTML file.</div></div>
-
-        <!-- Fullscreen Image Modal -->
-        <div id="imageModal" class="modal">
-            <span class="modal-close">×</span>
-            <div class="modal-container">
-                <img id="modalImage" class="modal-content" alt="">
-            </div>
-            <div class="zoom-controls">
-                <button class="zoom-btn" id="zoomOut">−</button>
-                <button class="zoom-reset" id="zoomReset">Reset</button>
-                <button class="zoom-btn" id="zoomIn">+</button>
-            </div>
+        <div class="sort-group">
+            <label for="sortOrder">Order:</label>
+            <select id="sortOrder">
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
         </div>
     </div>
 
-    <script>
-        let printsData = [];
-        let currentZoom = 1;
-        let isDragging = false;
-        let startX, startY, translateX = 0, translateY = 0;
+    <div id="gallery" class="gallery">
+        <div class="loading">Loading prints…</div>
+    </div>
 
-        // Load and parse CSV data
-        async function loadPrints() {
-            try {
-                const response = await fetch('prints.csv');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const csvText = await response.text();
-                
-                Papa.parse(csvText, {
-                    header: true,
-                    skipEmptyLines: true,
-                    dynamicTyping: true,
-                    complete: function(results) {
-                        if (results.errors.length > 0) {
-                            console.error('CSV parsing errors:', results.errors);
-                        }
-                        printsData = results.data.filter(row => 
-                            row.Artist && row.Title && row['Image file name']
-                        );
-                        displayPrints();
-                    },
-                    error: function(error) {
-                        showError('Error parsing CSV: ' + error.message);
-                    }
-                });
-            } catch (error) {
-                showError('Error loading prints.csv: ' + error.message + '. Please make sure the file exists in the same directory as this HTML file.');
-            }
+    <!-- Fullscreen Image Modal -->
+    <div id="imageModal" class="modal">
+        <span class="modal-close">×</span>
+        <div class="modal-container">
+            <img id="modalImage" class="modal-content" alt="">
+        </div>
+        <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomOut">−</button>
+            <button class="zoom-reset" id="zoomReset">Reset</button>
+            <button class="zoom-btn" id="zoomIn">+</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let printsData = [];
+    let currentZoom = 1;
+    let isDragging = false;
+    let startX, startY, translateX = 0, translateY = 0;
+
+    // ----------------------------------------------------------------
+    // Description formatter
+    // Converts plain-text descriptions to structured HTML.
+    // ----------------------------------------------------------------
+    function formatDescription(raw) {
+        if (!raw || !raw.trim()) return '';
+
+        // Strip stray encoding artefacts (Windows-1252 box-drawing chars etc.)
+        raw = raw.replace(/[\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f]/g, '');
+
+        // Flag "REPLACE WITH OUR IMAGE" notes
+        if (raw.includes('REPLACE WITH OUR IMAGE')) {
+            const note = '<span class="desc-replace">⚠ Image placeholder — replace with your own image</span>';
+            const rest = raw.replace('REPLACE WITH OUR IMAGE', '').trim();
+            return note + (rest ? '<br>' + formatDescription(rest) : '');
         }
 
-        function displayPrints() {
-            const gallery = document.getElementById('gallery');
-            
-            if (printsData.length === 0) {
-                gallery.innerHTML = '<div class="error">No prints found in the CSV file.</div>';
-                return;
+        // Split into paragraphs on blank lines or double-newlines
+        const paragraphs = raw.split(/\n{2,}|\r\n\r\n/).map(p => p.trim()).filter(Boolean);
+
+        let html = '';
+
+        for (const para of paragraphs) {
+            const lines = para.split(/\n/).map(l => l.trim()).filter(Boolean);
+
+            // Detect bullet lists: lines starting with •, ?, -, *
+            const isBulletList = lines.length > 1 && lines.every(l => /^[•??\-\*]/.test(l));
+            if (isBulletList) {
+                html += '<ul>' + lines.map(l => `<li>${escHtml(l.replace(/^[•??\-\*]\s*/, ''))}</li>`).join('') + '</ul>';
+                continue;
             }
 
-            gallery.innerHTML = '';
-            
-            printsData.forEach((print, index) => {
-                const card = document.createElement('div');
-                card.className = 'print-card';
-                card.style.animationDelay = `${(index % 6) * 0.1}s`;
-                const baseUrl = 'https://github.com/pltb-blip/Japanese-prints/releases/download/0.1/';
-                const imageFileName = print['Image file name'] || '';
-                const imageUrl = imageFileName ? baseUrl + imageFileName : '';
-                const description = print.Description || '';
-                
-                card.innerHTML = `
-                    <img src="${imageUrl}" alt="${print.Title}" class="print-image" 
-                         onclick="openModal('${imageUrl}', '${print.Title.replace(/'/g, "\\'")}')"
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOWZhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzZjNzU3ZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4='">
-                    <div class="print-info">
-                        <div class="print-artist">${print.Artist}</div>
-                        <div class="print-title">${print.Title}</div>
-                        ${print.Series ? `<div class="print-series">${print.Series}</div>` : ''}
-                        ${print['Date published'] ? `<div class="print-date">Published: ${print['Date published']}</div>` : ''}
-                        ${print.Publisher ? `<div class="print-publisher">Publisher: ${print.Publisher}</div>` : ''}
-                        ${description ? `<div class="print-description">${description}</div>` : ''}
-                    </div>
-                `;
-                
-                gallery.appendChild(card);
+            // Detect dimension lines (numbers + cm/in)
+            if (/\d+[\.,]\d+\s*(x|×)\s*\d+[\.,]\d+\s*(cm|in)/i.test(para)) {
+                html += `<span class="desc-dimensions">📐 ${escHtml(para)}</span>`;
+                continue;
+            }
+
+            // Detect URLs
+            if (/https?:\/\/\S+/.test(para)) {
+                const linked = escHtml(para).replace(
+                    /https?:\/\/[^\s<>"]+/g,
+                    url => `<a class="desc-link" href="${url}" target="_blank" rel="noopener">${url}</a>`
+                );
+                html += `<p>${linked}</p>`;
+                continue;
+            }
+
+            // Detect poem stanzas (quoted text or lines ending without period followed by short lines)
+            const isPoem = lines.length >= 2 && lines.every(l => l.length < 80) &&
+                           (para.startsWith('"') || /poem|reads|verse/i.test(para.split('\n')[0]));
+            if (isPoem) {
+                html += `<div class="desc-poem">${lines.map(l => escHtml(l)).join('<br>')}</div>`;
+                continue;
+            }
+
+            // Default: paragraph
+            const joined = lines.join(' ');
+            html += `<p>${escHtml(joined)}</p>`;
+        }
+
+        return html;
+    }
+
+    function escHtml(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // ----------------------------------------------------------------
+    // CSV loading — FIX 1: PapaParse loaded from CDN above
+    // ----------------------------------------------------------------
+    async function loadPrints() {
+        try {
+            const response = await fetch('prints.csv');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const csvText = await response.text();
+
+            Papa.parse(csvText, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.errors.length > 0) console.warn('CSV parse warnings:', results.errors);
+
+                    // FIX 2: Normalise multiline artist names (strip embedded newlines)
+                    printsData = results.data
+                        .map(row => {
+                            const cleaned = {};
+                            for (const [k, v] of Object.entries(row)) {
+                                cleaned[k] = typeof v === 'string' ? v.replace(/\r?\n/g, ' ').trim() : v;
+                            }
+                            return cleaned;
+                        })
+                        .filter(row => row.Artist && row.Title); // Image file not required to show card
+
+                    displayPrints();
+                },
+                error: function(err) { showError('Error parsing CSV: ' + err.message); }
             });
+        } catch (err) {
+            showError('Error loading prints.csv: ' + err.message +
+                '. Make sure prints.csv is in the same folder as index.html.');
+        }
+    }
+
+    function displayPrints() {
+        const gallery = document.getElementById('gallery');
+        if (printsData.length === 0) {
+            gallery.innerHTML = '<div class="error">No prints found in the CSV file.</div>';
+            return;
         }
 
-        function sortPrints() {
-            const sortBy = document.getElementById('sortBy').value;
-            const sortOrder = document.getElementById('sortOrder').value;
-            
-            const fieldMap = {
-                'artist': 'Artist',
-                'title': 'Title', 
-                'series': 'Series',
-                'date': 'Date published'
-            };
-            
-            const field = fieldMap[sortBy];
-            
-            printsData.sort((a, b) => {
-                let aVal = a[field] || '';
-                let bVal = b[field] || '';
-                
-                // Handle date sorting
-                if (sortBy === 'date') {
-                    aVal = parseInt(aVal) || 0;
-                    bVal = parseInt(bVal) || 0;
-                } else {
-                    aVal = aVal.toString().toLowerCase();
-                    bVal = bVal.toString().toLowerCase();
+        gallery.innerHTML = '';
+        const baseUrl = 'https://github.com/pltb-blip/Japanese-prints/releases/download/0.1/';
+
+        printsData.forEach((print, index) => {
+            const card = document.createElement('div');
+            card.className = 'print-card';
+            card.style.animationDelay = `${(index % 6) * 0.08}s`;
+
+            const imageFileName = (print['Image file name'] || '').trim();
+            const imageUrl = imageFileName ? baseUrl + imageFileName : '';
+            const descHtml = formatDescription(print.Description || '');
+            const isLong = (print.Description || '').length > 300;
+
+            // Safely escape for HTML attributes
+            const safeTitle = (print.Title || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const safeUrl   = imageUrl.replace(/'/g, '%27');
+
+            card.innerHTML = `
+                ${imageUrl
+                    ? `<img src="${imageUrl}" alt="${safeTitle}" class="print-image"
+                           onclick="openModal('${safeUrl}', '${safeTitle}')"
+                           onerror="this.style.display='none'">`
+                    : `<div style="height:80px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#999;font-size:0.85em;">No image</div>`
                 }
-                
-                let comparison = 0;
-                if (aVal < bVal) comparison = -1;
-                if (aVal > bVal) comparison = 1;
-                
-                return sortOrder === 'desc' ? -comparison : comparison;
-            });
-            
-            displayPrints();
-        }
+                <div class="print-info">
+                    <div class="print-artist">${escHtml(print.Artist)}</div>
+                    <div class="print-title">${escHtml(print.Title)}</div>
+                    ${print.Series     ? `<div class="print-series">${escHtml(print.Series)}</div>` : ''}
+                    ${print['Date published'] ? `<div class="print-date">Published: ${escHtml(String(print['Date published']))}</div>` : ''}
+                    ${print.Publisher  ? `<div class="print-publisher">Publisher: ${escHtml(print.Publisher)}</div>` : ''}
+                    ${descHtml ? `
+                        <div class="print-description">
+                            <div class="desc-body${isLong ? ' collapsed' : ''}" id="desc-${index}">${descHtml}</div>
+                            ${isLong ? `<button class="desc-toggle" onclick="toggleDesc(${index}, this)">Show more ▾</button>` : ''}
+                        </div>` : ''}
+                </div>`;
 
-        function showError(message) {
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = `<div class="error">${message}</div>`;
-        }
-
-        // Modal and zoom functions
-        function openModal(imageSrc, title) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
-            
-            modal.classList.add('show');
-            modalImg.src = imageSrc;
-            modalImg.alt = title;
-            
-            // Reset zoom and position - start with a reasonable default
-            currentZoom = 1;
-            translateX = 0;
-            translateY = 0;
-            
-            // Apply the initial transform
-            updateImageTransform();
-            
-            // Hide body scroll
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('imageModal');
-            modal.classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-
-        function updateImageTransform() {
-            const modalImg = document.getElementById('modalImage');
-            modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${currentZoom})`;
-            
-            // Update cursor based on zoom level
-            if (currentZoom > 1) {
-                modalImg.style.cursor = isDragging ? 'grabbing' : 'grab';
-            } else {
-                modalImg.style.cursor = 'grab';
-            }
-        }
-
-        function zoomIn() {
-            currentZoom = Math.min(currentZoom * 1.3, 5);
-            updateImageTransform();
-        }
-
-        function zoomOut() {
-            currentZoom = Math.max(currentZoom / 1.3, 0.5);
-            updateImageTransform();
-        }
-
-        function resetZoom() {
-            currentZoom = 1;
-            translateX = 0;
-            translateY = 0;
-            updateImageTransform();
-        }
-
-        // Mouse/touch drag functionality
-        function handleMouseDown(e) {
-            if (currentZoom > 1) {
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-                
-                // Change cursor and prevent default behaviors
-                document.body.style.cursor = 'grabbing';
-                document.getElementById('modalImage').style.cursor = 'grabbing';
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }
-
-        function handleMouseMove(e) {
-            if (isDragging && currentZoom > 1) {
-                translateX = e.clientX - startX;
-                translateY = e.clientY - startY;
-                updateImageTransform();
-                e.preventDefault();
-            }
-        }
-
-        function handleMouseUp(e) {
-            if (isDragging) {
-                isDragging = false;
-                document.body.style.cursor = 'auto';
-                document.getElementById('modalImage').style.cursor = currentZoom > 1 ? 'grab' : 'grab';
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }
-
-        // Touch events for mobile
-        function handleTouchStart(e) {
-            if (currentZoom > 1 && e.touches.length === 1) {
-                isDragging = true;
-                startX = e.touches[0].clientX - translateX;
-                startY = e.touches[0].clientY - translateY;
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }
-
-        function handleTouchMove(e) {
-            if (isDragging && currentZoom > 1 && e.touches.length === 1) {
-                translateX = e.touches[0].clientX - startX;
-                translateY = e.touches[0].clientY - startY;
-                updateImageTransform();
-                e.preventDefault();
-            }
-        }
-
-        function handleTouchEnd(e) {
-            if (isDragging) {
-                isDragging = false;
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        }
-
-        // Event listeners
-        document.getElementById('sortBy').addEventListener('change', sortPrints);
-        document.getElementById('sortOrder').addEventListener('change', sortPrints);
-
-        // Modal event listeners
-        document.getElementById('imageModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
+            gallery.appendChild(card);
         });
+    }
 
-        document.querySelector('.modal-close').addEventListener('click', closeModal);
+    function toggleDesc(index, btn) {
+        const el = document.getElementById('desc-' + index);
+        if (el.classList.contains('collapsed')) {
+            el.classList.remove('collapsed');
+            btn.textContent = 'Show less ▴';
+        } else {
+            el.classList.add('collapsed');
+            btn.textContent = 'Show more ▾';
+        }
+    }
 
-        // Zoom control event listeners
-        document.getElementById('zoomIn').addEventListener('click', zoomIn);
-        document.getElementById('zoomOut').addEventListener('click', zoomOut);
-        document.getElementById('zoomReset').addEventListener('click', resetZoom);
+    function sortPrints() {
+        const sortBy = document.getElementById('sortBy').value;
+        const sortOrder = document.getElementById('sortOrder').value;
+        const fieldMap = { artist: 'Artist', title: 'Title', series: 'Series', date: 'Date published' };
+        const field = fieldMap[sortBy];
 
-        // Drag event listeners - attach to modal container for better event handling
-        document.getElementById('imageModal').addEventListener('mousedown', handleMouseDown);
-        document.getElementById('imageModal').addEventListener('mousemove', handleMouseMove);
-        document.getElementById('imageModal').addEventListener('mouseup', handleMouseUp);
-        
-        // Also add to document to catch mouse events outside modal
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
+        printsData.sort((a, b) => {
+            let av = a[field] || '', bv = b[field] || '';
+            if (sortBy === 'date') { av = parseInt(av) || 0; bv = parseInt(bv) || 0; }
+            else { av = av.toString().toLowerCase(); bv = bv.toString().toLowerCase(); }
+            const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+            return sortOrder === 'desc' ? -cmp : cmp;
+        });
+        displayPrints();
+    }
 
-        // Touch event listeners
-        document.getElementById('imageModal').addEventListener('touchstart', handleTouchStart, { passive: false });
-        document.getElementById('imageModal').addEventListener('touchmove', handleTouchMove, { passive: false });
-        document.getElementById('imageModal').addEventListener('touchend', handleTouchEnd);
+    function showError(msg) {
+        document.getElementById('gallery').innerHTML = `<div class="error">${msg}</div>`;
+    }
 
-        // Mouse wheel zoom (reversed direction)
-        document.getElementById('imageModal').addEventListener('wheel', function(e) {
+    // ----------------------------------------------------------------
+    // Modal & zoom
+    // ----------------------------------------------------------------
+    function openModal(src, title) {
+        const modal = document.getElementById('imageModal');
+        const img   = document.getElementById('modalImage');
+        modal.classList.add('show');
+        img.src = src;
+        img.alt = title;
+        currentZoom = 1; translateX = 0; translateY = 0;
+        updateImageTransform();
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('imageModal').classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+
+    function updateImageTransform() {
+        const img = document.getElementById('modalImage');
+        img.style.transform = `translate(${translateX}px,${translateY}px) scale(${currentZoom})`;
+        img.style.cursor = isDragging ? 'grabbing' : 'grab';
+    }
+
+    function zoomIn()  { currentZoom = Math.min(currentZoom * 1.3, 5); updateImageTransform(); }
+    function zoomOut() { currentZoom = Math.max(currentZoom / 1.3, 0.5); updateImageTransform(); }
+    function resetZoom() { currentZoom = 1; translateX = 0; translateY = 0; updateImageTransform(); }
+
+    function handleMouseDown(e) {
+        if (currentZoom > 1) {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            document.body.style.cursor = 'grabbing';
+            e.preventDefault(); e.stopPropagation();
+        }
+    }
+    function handleMouseMove(e) {
+        if (isDragging && currentZoom > 1) {
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            updateImageTransform();
             e.preventDefault();
-            if (e.deltaY < 0) {
-                zoomOut();
-            } else {
-                zoomIn();
-            }
-        });
+        }
+    }
+    function handleMouseUp(e) {
+        if (isDragging) {
+            isDragging = false;
+            document.body.style.cursor = 'auto';
+            updateImageTransform();
+            e.preventDefault(); e.stopPropagation();
+        }
+    }
 
-        // Close modal with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeModal();
-            }
-        });
+    function handleTouchStart(e) {
+        if (currentZoom > 1 && e.touches.length === 1) {
+            isDragging = true;
+            startX = e.touches[0].clientX - translateX;
+            startY = e.touches[0].clientY - translateY;
+            e.preventDefault(); e.stopPropagation();
+        }
+    }
+    function handleTouchMove(e) {
+        if (isDragging && currentZoom > 1 && e.touches.length === 1) {
+            translateX = e.touches[0].clientX - startX;
+            translateY = e.touches[0].clientY - startY;
+            updateImageTransform();
+            e.preventDefault();
+        }
+    }
+    function handleTouchEnd(e) {
+        if (isDragging) { isDragging = false; e.preventDefault(); e.stopPropagation(); }
+    }
 
-        // Load prints when page loads
-        window.addEventListener('load', loadPrints);
-    </script>
+    // Event wiring
+    document.getElementById('sortBy').addEventListener('change', sortPrints);
+    document.getElementById('sortOrder').addEventListener('change', sortPrints);
+    document.getElementById('imageModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+    document.querySelector('.modal-close').addEventListener('click', closeModal);
+    document.getElementById('zoomIn').addEventListener('click', zoomIn);
+    document.getElementById('zoomOut').addEventListener('click', zoomOut);
+    document.getElementById('zoomReset').addEventListener('click', resetZoom);
 
-</body></html>
+    document.getElementById('imageModal').addEventListener('mousedown', handleMouseDown);
+    document.getElementById('imageModal').addEventListener('mousemove', handleMouseMove);
+    document.getElementById('imageModal').addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    document.getElementById('imageModal').addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.getElementById('imageModal').addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.getElementById('imageModal').addEventListener('touchend', handleTouchEnd);
+
+    // FIX 3: Correct mouse-wheel zoom direction (scroll up = zoom in)
+    document.getElementById('imageModal').addEventListener('wheel', e => {
+        e.preventDefault();
+        if (e.deltaY < 0) zoomIn(); else zoomOut();
+    }, { passive: false });
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    window.addEventListener('load', loadPrints);
+</script>
+</body>
+</html>
