@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<!-- saved from url=(0045)file:///C:/Users/Simon/Downloads/index_1.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Japanese Prints Collection</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="./Japanese Prints Collection_files/papaparse.min.js.download"></script>
     <style>
         * {
             margin: 0;
@@ -404,7 +404,7 @@
     <div class="container">
         <header>
             <h1>Japanese Woodblock Prints</h1>
-            <p class="subtitle">Our favourites</p>
+            <p class="subtitle">These are our favourite Japanese woodblock prints which we are studying.  Text in red is temporary.</p>
         </header>
 
         <div class="controls">
@@ -426,13 +426,11 @@
             </div>
         </div>
 
-        <div id="gallery" class="gallery">
-            <div class="loading">Loading prints collection...</div>
-        </div>
+        <div id="gallery" class="gallery"><div class="error">Error loading prints.csv: Failed to fetch. Please make sure the file exists in the same directory as this HTML file.</div></div>
 
         <!-- Fullscreen Image Modal -->
         <div id="imageModal" class="modal">
-            <span class="modal-close">&times;</span>
+            <span class="modal-close">×</span>
             <div class="modal-container">
                 <img id="modalImage" class="modal-content" alt="">
             </div>
@@ -495,15 +493,13 @@
                 const card = document.createElement('div');
                 card.className = 'print-card';
                 card.style.animationDelay = `${(index % 6) * 0.1}s`;
-                
                 const baseUrl = 'https://github.com/pltb-blip/Japanese-prints/releases/download/0.1/';
                 const imageFileName = print['Image file name'] || '';
                 const imageUrl = imageFileName ? baseUrl + imageFileName : '';
-               
                 const description = print.Description || '';
                 
                 card.innerHTML = `
-                    <img src="${imageUrl }" alt="${print.Title}" class="print-image" 
+                    <img src="${imageUrl}" alt="${print.Title}" class="print-image" 
                          onclick="openModal('${imageUrl}', '${print.Title.replace(/'/g, "\\'")}')"
                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjhmOWZhIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzZjNzU3ZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4='">
                     <div class="print-info">
@@ -731,5 +727,5 @@
         // Load prints when page loads
         window.addEventListener('load', loadPrints);
     </script>
-</body>
-</html>
+
+</body></html>
